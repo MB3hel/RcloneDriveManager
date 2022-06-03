@@ -54,6 +54,8 @@ class ConfigListItem(QWidget):
 
 
 class ConfigWindow(QMainWindow):
+    closed = Signal(dict)
+
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.ui = Ui_ConfigWindow()
@@ -63,35 +65,29 @@ class ConfigWindow(QMainWindow):
 
     def add_config(self):
         item = ConfigListItem()
+        # Default args
+        item.ui.txt_args.setPlainText("--dir-cache-time 1m0s\n--vfs-cache-mode full")
         item.removed.connect(self.remove_config)
         self.ui.sa_main.layout().insertWidget(self.ui.sa_main.layout().count() - 1, item)
 
     def remove_config(self, which: ConfigListItem):
         self.ui.sa_main.layout().removeWidget(which)
         which.deleteLater()
-    
-    def showEvent(self, event: QShowEvent):
-        if os.path.exists(self.cfg_file):
-            try:
-                with open(self.cfg_file, "r") as f:
-                    data = json.load(f)
-                    count = data["count"]
-                    for i in range(count):
-                        self.add_config()
-                        obj: ConfigListItem = self.ui.sa_main.layout().itemAt(i).widget()
-                        obj.ui.txt_remote.setText(data["items"][str(i)]["remote_name"])
-                        obj.ui.txt_mountpoint.setText(data["items"][str(i)]["mount_point"])
-                        obj.ui.txt_args.setPlainText(data["items"][str(i)]["mount_args"])
-            except Exception as e:
-                traceback.print_exc()
-                dialog = QMessageBox(self)
-                dialog.setWindowTitle("Error loading config.")
-                dialog.setText("Exception '{}' occurred.".format(type(e).__name__))
-                dialog.setIcon(QMessageBox.Warning)
-                dialog.setStandardButtons(QMessageBox.Ok)
-                dialog.setDefaultButton(QMessageBox.Ok)
-                dialog.exec_()
-        return super().showEvent(event)
+
+    def clear_configs(self):
+        for i in range(self.ui.sa_main.layout().count() - 1):
+            item = self.ui.sa_main.layout().itemAt(i)
+            self.ui.sa_main.layout().removeItem(item)
+
+    def show(self, data: dict):
+        self.clear_configs()
+        for i in range(data["count"]):
+            self.add_config()
+            obj: ConfigListItem = self.ui.sa_main.layout().itemAt(i).widget()
+            obj.ui.txt_remote.setText(data["items"][str(i)]["remote_name"])
+            obj.ui.txt_mountpoint.setText(data["items"][str(i)]["mount_point"])
+            obj.ui.txt_args.setPlainText(data["items"][str(i)]["mount_args"])
+        return super().show()
     
     def closeEvent(self, event: QCloseEvent):
         try:
@@ -102,19 +98,22 @@ class ConfigWindow(QMainWindow):
                 data["count"] = self.ui.sa_main.layout().count() - 1
                 data["items"] = {}
                 for i in range(data["count"]):
-                    data["items"][i] = {}
+                    data["items"][str(i)] = {}
                     obj: ConfigListItem = self.ui.sa_main.layout().itemAt(i).widget()
-                    data["items"][i]["remote_name"] = obj.ui.txt_remote.text()
-                    data["items"][i]["mount_point"] = obj.ui.txt_mountpoint.text()
-                    data["items"][i]["mount_args"] = obj.ui.txt_args.toPlainText()
+                    data["items"][str(i)]["remote_name"] = obj.ui.txt_remote.text()
+                    data["items"][str(i)]["mount_point"] = obj.ui.txt_mountpoint.text()
+                    data["items"][str(i)]["mount_args"] = obj.ui.txt_args.toPlainText()
                 json.dump(data, f)
+                self.closed.emit(data)
         except Exception as e:
             traceback.print_exc()
             dialog = QMessageBox(self)
-            dialog.setWindowTitle("Error saving config.")
-            dialog.setText("Exception '{}' occurred.".format(type(e).__name__))
+            dialog.setWindowTitle("RcloneDriveManager")
+            dialog.setText("Error occurred saving configuration file.")
+            dialog.setDetailedText("Exception '{}' occurred.".format(type(e).__name__))
             dialog.setIcon(QMessageBox.Warning)
             dialog.setStandardButtons(QMessageBox.Ok)
             dialog.setDefaultButton(QMessageBox.Ok)
             dialog.exec_()
+            self.closed.emit({})
         return super().closeEvent(event)
