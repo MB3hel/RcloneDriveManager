@@ -60,6 +60,7 @@ class ConfigWindow(QMainWindow):
         super().__init__(parent)
         self.ui = Ui_ConfigWindow()
         self.ui.setupUi(self)
+        self.list_items = []
         self.ui.btn_add.clicked.connect(self.add_config)
         self.cfg_file = QStandardPaths.writableLocation(QStandardPaths.AppDataLocation) + "/config.json"
 
@@ -69,15 +70,17 @@ class ConfigWindow(QMainWindow):
         item.ui.txt_args.setPlainText("--dir-cache-time 1m0s\n--vfs-cache-mode full")
         item.removed.connect(self.remove_config)
         self.ui.sa_main.layout().insertWidget(self.ui.sa_main.layout().count() - 1, item)
+        self.list_items.append(item)
 
     def remove_config(self, which: ConfigListItem):
         self.ui.sa_main.layout().removeWidget(which)
+        self.list_items.remove(which)
         which.deleteLater()
 
     def clear_configs(self):
-        for i in range(self.ui.sa_main.layout().count() - 1):
-            item = self.ui.sa_main.layout().itemAt(i)
-            self.ui.sa_main.layout().removeItem(item)
+        for cfg_list_item in self.list_items:
+            self.ui.sa_main.layout().removeWidget(cfg_list_item)
+        self.list_items.clear()
 
     def show(self, data: dict):
         self.clear_configs()
