@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.1
+Type=Application
+Terminal=false
+Name=RcloneDriveManager
+Comment=Tray icon to mount / unmount rclone remotes.
+Icon=/usr/lib/rclone-drive-manager/icon.png
+Exec=/usr/lib/rclone-drive-manager/start.sh
+StartupWMClass=RcloneDriveManager
+Actions=
+Categories=Development;
+StartupNotify=false

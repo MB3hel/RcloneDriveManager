@@ -16,6 +16,7 @@ python src/main.py
 ## Packaging and Running
 
 ```sh
+python compile.py
 cd packagaing
 ./ubuntu.sh
 ```

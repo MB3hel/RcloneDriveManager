@@ -30,4 +30,36 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Create Ubuntu package using system libraries
-# TODO
+
+DIR=$(realpath $(dirname "$0"))
+
+pushd "$DIR" > /dev/null
+
+echo "*** Run compile.py before packaging! ***"
+
+
+echo "Creating directory structure..."
+rm -rf build
+mkdir -p build/rclone-drive-manager
+cd build/rclone-drive-manager
+mkdir -p usr/share/applications/
+mkdir -p usr/lib/rclone-drive-manager/
+mkdir -p usr/share/doc/rclone-drive-manager/
+mkdir -p DEBIAN
+
+cp ../../../LICENSE usr/share/doc/rclone-drive-manager/copyright
+cp -r ../../../src/*.py usr/lib/rclone-drive-manager/
+cp ../../start.sh usr/lib/rclone-drive-manager/
+chmod 755 usr/lib/rclone-drive-manager/start.sh
+cp ../../rclone-drive-manager.desktop usr/share/applications/
+chmod 755 usr/share/applications/rclone-drive-manager.desktop
+cp ../../../res/icon.png usr/lib/rclone-drive-manager/
+cp ../../deb_control DEBIAN/control
+chmod 755 DEBIAN/control
+
+
+echo "Making deb package..."
+cd ..
+dpkg-deb --build rclone-drive-manager
+
+popd > /dev/null
