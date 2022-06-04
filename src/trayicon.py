@@ -83,11 +83,12 @@ class TrayIcon(QSystemTrayIcon):
                 return act
         return None
 
-    def poll_mounted(self):       
+    def poll_mounted(self):     
+        to_delete = []  
         for name, value in self.mounted_list.items():
             proc = value[1]
             if proc.poll() is not None:
-                del self.mounted_list[name]
+                to_delete.append(name)
                 act = self.act_for_name(name)
                 if act is not None:
                     act.setChecked(False)
@@ -101,7 +102,8 @@ class TrayIcon(QSystemTrayIcon):
                     dialog.setStandardButtons(QMessageBox.Ok)
                     dialog.setDefaultButton(QMessageBox.Ok)
                     dialog.exec_()
-                    return
+        for name in to_delete:
+            del self.mounted_list[name]
     
     def toggle_mount(self):
         act: QAction = self.sender()
@@ -214,7 +216,7 @@ class TrayIcon(QSystemTrayIcon):
         if act is not None:
             act.setChecked(True)
 
-    def unmount(self, name: str, force: bool = False):
+    def unmount(self, name: str, force: bool = False, noprompt: bool = False):
         # Don't check this process in poll_mounted anymore
         proc = self.mounted_list[name][1]
         mountpoint = self.mounted_list[name][0]
@@ -247,23 +249,51 @@ class TrayIcon(QSystemTrayIcon):
             else:
                 # Unmount failed. Add back to list
                 self.mounted_list[name] = (mountpoint, proc)
-                dialog = QMessageBox()
-                dialog.setWindowTitle("RcloneDriveManager")
-                dialog.setText("Unmount failed")
-                dialog.setDetailedText("Failed to cleanly unmount {}.".format(name))
-                dialog.setIcon(QMessageBox.Warning)
-                dialog.setStandardButtons(QMessageBox.Ok)
-                dialog.setDefaultButton(QMessageBox.Ok)
-                dialog.exec_()
-                return
+                if not noprompt:
+                    dialog = QMessageBox()
+                    dialog.setWindowTitle("RcloneDriveManager")
+                    dialog.setText("Unmount failed")
+                    dialog.setDetailedText("Failed to cleanly unmount {}.".format(name))
+                    dialog.setIcon(QMessageBox.Warning)
+                    dialog.setStandardButtons(QMessageBox.Ok)
+                    dialog.setDefaultButton(QMessageBox.Ok)
+                    dialog.exec_()
+                return False
         
         act = self.act_for_name(name)
         if act is not None:
             act.setChecked(False)
+        return True
         
 
 
     def exit_app(self):
-        # TODO: Prompt user first
-        # TODO: Unmount all if mounted
-        QApplication.instance().quit()
+        dialog = QMessageBox()
+        dialog.setWindowTitle("RcloneDriveManager")
+        dialog.setText("Are you sure you want to quit? QUITTING WILL UNMOUNT ALL DRIVES!")
+        dialog.setIcon(QMessageBox.Question)
+        dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        dialog.setDefaultButton(QMessageBox.No)
+        res = dialog.exec_()
+        if res == QMessageBox.Yes:
+            # Unmount all
+            self.poll_timer.stop()
+            for name, value in self.mounted_list.copy().items():
+                if not self.unmount(name, False, True):
+                    dialog = QMessageBox()
+                    dialog.setWindowTitle("RcloneDriveManager")
+                    dialog.setText("Failed to cleanly umount {}. Force unmount? If no is selected, the application will not exit.".format(name))
+                    dialog.setIcon(QMessageBox.Question)
+                    dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                    dialog.setDefaultButton(QMessageBox.No)
+                    res = dialog.exec_()
+                    if res != QMessageBox.Yes:
+                         # Exit was aborted. Restart poll timer
+                        self.poll_timer.start(5000)
+                        return
+                    # Force unmount
+                    self.unmount(name, True, True)
+            QApplication.instance().quit()
+            
+           
+
