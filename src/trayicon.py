@@ -1,4 +1,5 @@
 
+import shutil
 import subprocess
 import os
 import json
@@ -87,6 +88,7 @@ class TrayIcon(QSystemTrayIcon):
         to_delete = []  
         for name, value in self.mounted_list.items():
             proc = value[1]
+            mountpoint = value[0]
             if proc.poll() is not None:
                 to_delete.append(name)
                 act = self.act_for_name(name)
@@ -102,6 +104,11 @@ class TrayIcon(QSystemTrayIcon):
                     dialog.setStandardButtons(QMessageBox.Ok)
                     dialog.setDefaultButton(QMessageBox.Ok)
                     dialog.exec_()
+                # Remove mount dir when unmounted (only if empty to prevent accidental data loss)
+                try:
+                    os.rmdir(mountpoint)
+                except:
+                    traceback.print_exc()
         for name in to_delete:
             del self.mounted_list[name]
     
@@ -260,6 +267,12 @@ class TrayIcon(QSystemTrayIcon):
                     dialog.exec_()
                 return False
         
+        # Remove mount dir when unmounted (only if empty to prevent accidental data loss)
+        try:
+            os.rmdir(mountpoint)
+        except:
+            traceback.print_exc()
+
         act = self.act_for_name(name)
         if act is not None:
             act.setChecked(False)
