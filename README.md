@@ -15,6 +15,8 @@ python src/main.py
 
 ## Packaging and Running
 
+- Change version if needed in `res/version.txt` and `packaging/deb_control`
+
 ```sh
 python compile.py
 cd packagaing

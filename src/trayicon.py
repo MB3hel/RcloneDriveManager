@@ -7,8 +7,8 @@ import time
 import traceback
 from typing import Optional, List, Dict, Tuple
 from PySide2.QtWidgets import QSystemTrayIcon, QMenu, QWidget, QApplication, QMessageBox, QAction
-from PySide2.QtGui import QIcon
-from PySide2.QtCore import QStandardPaths, QTimer
+from PySide2.QtGui import QIcon, QCursor
+from PySide2.QtCore import QStandardPaths, QTimer, QFile
 from configwindow import ConfigWindow
 
 
@@ -31,10 +31,13 @@ class TrayIcon(QSystemTrayIcon):
         self.setIcon(QIcon(":/icon.png"))
         self.setToolTip("RcloneDriveManager")
 
+        self.activated.connect(self.showMenuOnTrigger)
+
         if os.path.exists(self.cfg_file):
             try:
                 with open(self.cfg_file, "r") as f:
                     data = json.load(f)
+                    self.update_menu(data)
             except Exception as e:
                 traceback.print_exc()
                 dialog = QMessageBox()
@@ -45,11 +48,14 @@ class TrayIcon(QSystemTrayIcon):
                 dialog.setStandardButtons(QMessageBox.Ok)
                 dialog.setDefaultButton(QMessageBox.Ok)
                 dialog.exec_()
-        self.update_menu(data)
         self.config_win.closed.connect(self.update_menu)
         self.poll_timer.timeout.connect(self.poll_mounted)
         self.poll_timer.setSingleShot(False)
         self.poll_timer.start(5000)
+
+    def showMenuOnTrigger(self, reason):
+        if reason == QSystemTrayIcon.Trigger:
+            self.contextMenu().popup(QCursor.pos())
 
     def update_menu(self, data):
         for action in self.mount_actions:

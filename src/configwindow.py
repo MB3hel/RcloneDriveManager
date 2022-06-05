@@ -31,7 +31,7 @@
 
 import traceback
 from PySide2.QtWidgets import QMainWindow, QWidget, QMessageBox
-from PySide2.QtCore import Signal, QStandardPaths
+from PySide2.QtCore import Signal, QStandardPaths, QFile
 from PySide2.QtGui import QShowEvent, QCloseEvent
 from typing import Optional
 from ui_configwindow import Ui_ConfigWindow
@@ -63,6 +63,11 @@ class ConfigWindow(QMainWindow):
         self.list_items = []
         self.ui.btn_add.clicked.connect(self.add_config)
         self.cfg_file = QStandardPaths.writableLocation(QStandardPaths.AppDataLocation) + "/config.json"
+
+        version_file = QFile(":/version.txt")
+        if version_file.open(QFile.ReadOnly):
+            version_txt = bytes(version_file.readLine()).strip().decode()
+            self.setWindowTitle("{0} - v{1}".format(self.windowTitle(), version_txt))
 
     def add_config(self):
         item = ConfigListItem()

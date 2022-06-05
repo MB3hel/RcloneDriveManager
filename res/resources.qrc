@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/">
     <file>icon.png</file>
+    <file>version.txt</file>
 </qresource>
 </RCC>
