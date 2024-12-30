@@ -22,3 +22,24 @@ python compile.py
 cd packagaing
 ./ubuntu.sh
 ```
+
+## GUI Config file example
+
+*Can configure via gui, but file can be backed up / copied as needed.*
+
+`~/.local/share/rclone-drive-manager/config.json`
+
+```
+{
+    "count": 1, 
+    "items": {
+        "0": {
+            "remote_name": "OneDrive", 
+            "mount_point": "~/OneDrive", 
+            "mount_args": "--vfs-cache-mode writes"
+        }
+    }
+}
+```
+
+Note that remotes must be setup in rclone. The GUI config just determines what pre-setup remote name to mount and how / where.
