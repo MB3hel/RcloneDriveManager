@@ -30,9 +30,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import traceback
-from PySide2.QtWidgets import QMainWindow, QWidget, QMessageBox
-from PySide2.QtCore import Signal, QStandardPaths, QFile
-from PySide2.QtGui import QShowEvent, QCloseEvent
+
+try:
+    from PySide6.QtWidgets import QMainWindow, QWidget, QMessageBox
+    from PySide6.QtCore import Signal, QStandardPaths, QFile
+    from PySide6.QtGui import QShowEvent, QCloseEvent
+except:
+    from PySide2.QtWidgets import QMainWindow, QWidget, QMessageBox
+    from PySide2.QtCore import Signal, QStandardPaths, QFile
+    from PySide2.QtGui import QShowEvent, QCloseEvent
+
 from typing import Optional
 from ui_configwindow import Ui_ConfigWindow
 from ui_config_list_item import Ui_ConfigListItem

@@ -1,6 +1,7 @@
+#!/usr/bin/env bash
 # BSD 3-Clause License
 
-# Copyright (c) 2022, Marcus Behel
+# Copyright (c) 2025, Marcus Behel
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -28,31 +29,33 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
+# Create Fedora package using system libraries
 
-try:
-    from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
-    from PySide6.QtGui import QIcon, QAction
-    from PySide6.QtCore import Qt
-except:
-    from PySide2.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
-    from PySide2.QtGui import QIcon
-    from PySide2.QtCore import Qt
+DIR=$(realpath $(dirname "$0"))
 
-from configwindow import ConfigWindow
-from trayicon import TrayIcon
+pushd "$DIR" > /dev/null
+
+echo "*** Run compile.py before packaging! ***"
 
 
-if __name__ == "__main__":
-    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
-    QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
-    app = QApplication(sys.argv)
-    app.setQuitOnLastWindowClosed(False)
-    app.setApplicationName("rclone-drive-manager")
+echo "Creating directory structure..."
+rm -rf build
+mkdir -p build/rclone-drive-manager
+cd build/rclone-drive-manager
+mkdir -p usr/share/applications/
+mkdir -p usr/lib/rclone-drive-manager/
+mkdir -p usr/share/doc/rclone-drive-manager/
 
-    win = ConfigWindow()
-    tray = TrayIcon(win)
-    tray.show()
+cp ../../../LICENSE usr/share/doc/rclone-drive-manager/copyright
+cp -r ../../../src/*.py usr/lib/rclone-drive-manager/
+cp ../../start.sh usr/lib/rclone-drive-manager/
+chmod 755 usr/lib/rclone-drive-manager/start.sh
+cp ../../rclone-drive-manager.desktop usr/share/applications/
+chmod 755 usr/share/applications/rclone-drive-manager.desktop
+cp ../../../res/icon.png usr/lib/rclone-drive-manager/
 
-    sys.exit(app.exec_())
+echo "Making rpm package..."
+rpmdev-setuptree
+rpmbuild -ba ../../rpm.spec --define "_pkg_build_dir $PWD"
+
+popd > /dev/null

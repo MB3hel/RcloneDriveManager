@@ -6,9 +6,16 @@ import json
 import time
 import traceback
 from typing import Optional, List, Dict, Tuple
-from PySide2.QtWidgets import QSystemTrayIcon, QMenu, QWidget, QApplication, QMessageBox, QAction
-from PySide2.QtGui import QIcon, QCursor
-from PySide2.QtCore import QStandardPaths, QTimer, QFile
+
+try:
+    from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QWidget, QApplication, QMessageBox
+    from PySide6.QtGui import QIcon, QCursor, QAction
+    from PySide6.QtCore import QStandardPaths, QTimer, QFile
+except:
+    from PySide2.QtWidgets import QSystemTrayIcon, QMenu, QWidget, QApplication, QMessageBox, QAction
+    from PySide2.QtGui import QIcon, QCursor
+    from PySide2.QtCore import QStandardPaths, QTimer, QFile
+
 from configwindow import ConfigWindow
 
 

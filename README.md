@@ -15,12 +15,13 @@ python src/main.py
 
 ## Packaging and Running
 
-- Change version if needed in `res/version.txt` and `packaging/deb_control`
+- Change version if needed in `res/version.txt` and `packaging/deb_control` and `packaging/rpm.spec`
 
 ```sh
 python compile.py
 cd packagaing
 ./ubuntu.sh
+./fedora.sh
 ```
 
 ## GUI Config file example
