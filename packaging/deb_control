@@ -3,6 +3,6 @@ Version: 1.0.2
 Section: base
 Priority: optional
 Architecture: all
-Depends: rclone, python3, python3-pyside2.qtwidgets, python3-pyside2.qtgui, python3-pyside2.qtcore
+Depends: rclone, python3, python3-pyside6.qtwidgets, python3-pyside6.qtgui, python3-pyside6.qtcore
 Maintainer: Marcus Behel <marcus.behel@mindspring.com>
 Description: Tray icon to mount / unmount rclone remotes.
