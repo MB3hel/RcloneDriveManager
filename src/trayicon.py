@@ -205,6 +205,7 @@ class TrayIcon(QSystemTrayIcon):
         # store popen for later
         user_args = str(self.data["items"][str(idx)]["mount_args"]).split()
         args = []
+        args.append("systemd-inhibit")   # Mounted remotes cause some systems to lockup on sleep
         args.append("rclone")
         args.append("mount")
         args.extend(user_args)
