@@ -206,6 +206,9 @@ class TrayIcon(QSystemTrayIcon):
         user_args = str(self.data["items"][str(idx)]["mount_args"]).split()
         args = []
         args.append("systemd-inhibit")   # Mounted remotes cause some systems to lockup on sleep
+        args.append("--what=sleep:shutdown")
+        args.append("--who=RcloneDriveManager")
+        args.append(f"--why={name} mounted")
         args.append("rclone")
         args.append("mount")
         args.extend(user_args)

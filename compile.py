@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # BSD 3-Clause License
 
 # Copyright (c) 2022, Marcus Behel
